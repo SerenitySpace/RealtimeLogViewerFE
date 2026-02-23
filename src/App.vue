@@ -316,9 +316,20 @@ const formatTimestamp = (timestamp) => {
 
 // 复制日志内容
 const copyLog = async (log) => {
+  const logText = `[${formatTimestamp(log.timestamp)}] [${log.level}] ${log.message}`
   try {
-    const logText = `[${formatTimestamp(log.timestamp)}] [${log.level}] ${log.message}`
-    await navigator.clipboard.writeText(logText)
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(logText)
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = logText
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
     showToastMessage('日志已复制到剪贴板', 'success')
   } catch (error) {
     console.error('复制失败:', error)
